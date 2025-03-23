@@ -20,7 +20,7 @@ app.get("/c1", async (req, res) => {
     const ip = req.socket.remoteAddress;
 
     if (!hwid) {
-        return res.send("no hwid found. press get key on your executor.");
+        return res.send("no hwid found. press get key on your app.");
     }
 
     await keyschema.findOne({hwid: hwid})
@@ -39,7 +39,7 @@ app.get("/c2", async (req, res) => {
     const checkpoint = await checkschema.findOne({ ip: ip });
 
     if (!checkpoint) {
-        return res.send("no checkpoint found. press get key on your executor.");
+        return res.send("no checkpoint found. press get key on your app.");
     };
 
     checkpoint.checkpoint = 2;
@@ -54,7 +54,7 @@ app.get("/getkey", async (req, res) => {
     const key = await keygen();
 
     if (!checkpoint) {
-        return res.send("no checkpoint found. press get key on your executor.");
+        return res.send("no checkpoint found. press get key on your app.");
     } else if (checkpoint.checkpoint !== 2) {
         return res.redirect(linkvertise(69420, "http://localhost:3000/c1?hwid=" + checkpoint.hwid));
     };
