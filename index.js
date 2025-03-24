@@ -11,7 +11,7 @@ const app = express();
 
 const limiter = rateLimit({
     windowMs: 60 * 1000,
-    max: 5,
+    max: 10,
     message: "too many requests. try later.",
     standardHeaders: true
 });
@@ -32,7 +32,7 @@ app.get("/c1", async (req, res) => {
 
     if (!hwid) {
         return res.send("no hwid found. press get key on your app.");
-    }
+    };
 
     const usedkey = await keyschema.findOne({ hwid: hwid });
     if (usedkey) {
