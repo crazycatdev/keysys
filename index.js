@@ -1,12 +1,22 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const crypto = require("crypto");
+const rateLimit = require("express-rate-limit");
 const checkschema = require("./schemas/checkschema");
 const linkvertise = require("./functions/linkvertise");
 const keyschema = require("./schemas/keyschema");
 const keygen = require("./functions/keygen");
 
 const app = express();
+
+const limiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 5,
+    message: "too many requests. try later.",
+    standardHeaders: true
+});
+
+app.use(limiter);
 
 async function dbConnection() {
     await mongoose.connect("mongodb://localhost:27017/keysys").then(console.log("db connected!"))
