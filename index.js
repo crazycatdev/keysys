@@ -66,6 +66,11 @@ app.get("/c2", async (req, res) => {
         return res.send("checkpoint invalid. press get key on your app.");
     };
 
+    if (Date.now() - checkpoint.lastUpdatedAt < 10000) {
+        await checkpoint.deleteOne();
+        return res.send("you must complete the linkvertise first.");
+    };
+
     if (Date.now() - checkpoint.lastUpdatedAt > 1000 * 60 * 5) {
         await checkpoint.deleteOne();
         return res.send("session expired. press get key on your app.");
@@ -92,6 +97,11 @@ app.get("/getkey", async (req, res) => {
 
     if (!checkpoint || checkpoint.checkpoint !== 2) {
         return res.send("no checkpoint found. press get key on your app.");
+    };
+
+    if (Date.now() - checkpoint.lastUpdatedAt < 10000) {
+        await checkpoint.deleteOne();
+        return res.send("you must complete the linkvertise first.");
     };
 
     if (Date.now() - checkpoint.lastUpdatedAt > 1000 * 60 * 5) {
