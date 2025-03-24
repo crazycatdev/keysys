@@ -23,7 +23,10 @@ app.get("/c1", async (req, res) => {
         return res.send("no hwid found. press get key on your app.");
     }
 
-    await keyschema.findOne({hwid: hwid})
+    const usedkey = await keyschema.findOne({hwid: hwid});
+    if(usedkey) {
+        res.send(usedkey.key);
+    }
 
     await checkschema.create({
         hwid: hwid,
