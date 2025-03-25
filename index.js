@@ -6,6 +6,7 @@ const checkschema = require("./schemas/checkschema");
 const linkvertise = require("./functions/linkvertise");
 const keyschema = require("./schemas/keyschema");
 const keygen = require("./functions/keygen");
+require("dotenv").config();
 
 const app = express();
 
@@ -16,17 +17,15 @@ const limiter = rateLimit({
     standardHeaders: true
 });
 
-app.use(limiter);
-
 async function dbConnection() {
-    await mongoose.connect("mongodb://localhost:27017/keysys").then(console.log("db connected!"))
+    await mongoose.connect(process.env.DB_URL).then(console.log("db connected!"))
 };
 
 app.get("/", (req, res) => {
     res.send("hello world");
 });
 
-app.get("/c1", async (req, res) => {
+app.get("/c1", limiter, async (req, res) => {
     const hwid = req.query.hwid;
     const ip = req.socket.remoteAddress;
 
@@ -39,7 +38,7 @@ app.get("/c1", async (req, res) => {
         return res.send(usedkey.key);
     };
 
-    const stepToken = crypto.randomBytes(16).toString("hex");
+    const stepToken = crypto.randomBytes(32).toString("hex");
 
     await checkschema.create({
         hwid: hwid,
@@ -49,10 +48,10 @@ app.get("/c1", async (req, res) => {
         lastUpdatedAt: Date.now()
     });
 
-    res.redirect(linkvertise(69420, `http://localhost:3000/c2?stepToken=${stepToken}`));
+    res.redirect(linkvertise(process.env.LINKVERTISE_ID, `${process.env.FULL_URL}:${process.env.PORT}/c2?stepToken=${stepToken}`));
 });
 
-app.get("/c2", async (req, res) => {
+app.get("/c2", limiter, async (req, res) => {
     const ip = req.socket.remoteAddress;
     const stepToken = req.query.stepToken;
 
@@ -76,16 +75,16 @@ app.get("/c2", async (req, res) => {
         return res.send("session expired. press get key on your app.");
     };
 
-    const stepTokenNew = crypto.randomBytes(16).toString("hex");
+    const stepTokenNew = crypto.randomBytes(32).toString("hex");
 
     checkpoint.checkpoint = 2;
     checkpoint.stepToken = stepTokenNew;
     checkpoint.lastUpdatedAt = Date.now();
     await checkpoint.save();
-    res.redirect(linkvertise(69420, `http://localhost:3000/getkey?stepToken=${stepTokenNew}`));
+    res.redirect(linkvertise(process.env.LINKVERTISE_ID, `${process.env.FULL_URL}:${process.env.PORT}/getkey?stepToken=${stepTokenNew}`));
 });
 
-app.get("/getkey", async (req, res) => {
+app.get("/getkey", limiter, async (req, res) => {
     const ip = req.socket.remoteAddress;
     const stepToken = req.query.stepToken;
 
@@ -114,7 +113,7 @@ app.get("/getkey", async (req, res) => {
     await keyschema.create({
         hwid: checkpoint.hwid,
         key: key,
-        endsAt: Date.now() + 1000 * 60 * 60 * 24
+        endsAt: Date.now() + Number(process.env.KEY_TIME)
     });
 
     await checkpoint.deleteOne();
@@ -137,4 +136,4 @@ app.get("/checkkey", async (req, res) => {
 });
 
 dbConnection().catch(err => console.log(err));
-app.listen(3000, console.log("listening at port 3000!"));
+app.listen(process.env.PORT, console.log("listening at port: "+ process.env.PORT));
