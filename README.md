@@ -169,7 +169,7 @@ This project is released under the [MIT License](LICENSE).
 
 ## Acknowledgements
 
-- **crazycatdev** – For developing this quick and innovative solution.
+- **crazycat** – For developing this quick and innovative solution.
 - Thanks to the open-source community for the libraries and tools that make rapid prototyping possible.
 
 ---
